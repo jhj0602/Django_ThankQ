@@ -1,0 +1,96 @@
+{% load static %}
+
+<head>
+  <style>
+    * {
+      font-family: 'Do Hyeon', sans-serif;
+    
+    }
+
+    .logo {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      margin-top: 40px;
+      margin-bottom: 20px;
+      width: 180px;
+    }
+
+    .card-body {
+      padding: 0.5em !important;
+    }
+
+    .nav-item {
+      margin-right: 30px;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+
+  <!-- JS, Popper.js, and jQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+    integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <nav style="color: F3E44E;"class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" style="color: F3E44E;"><span id="user_name" style="color: F3E44E;">{{ user.username }}</span>님 반갑습니다 😊</a>
+        </li>
+        <li class="nav-item">
+          <a style="color: F3E44E;" class="nav-link" href="{% url 'create' %}" >분실물 신고</a>
+        </li>
+        <li class="nav-item">
+          <a  style="color: F3E44E;" class="nav-link" href="{% url 'mypage' %}">QR코드 확인 </a>
+        </li>
+        <li class="nav-item">
+          <a style="color: F3E44E;"class="nav-link" href="{% url 'logout' %}">로그아웃 </a>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'login' %}">로그인 🔑</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'signup' %}">회원가입 ✅</a>
+        </li>
+
+        {% endif %}
+
+      </ul>
+
+      <form class="form-inline my-2 my-lg-0" action="{% url 'search' %}" method="post">
+        {% csrf_token %}
+        <input class="form-control mr-sm-2" type="search" placeholder="키워드를 입력해주세요" aria-label="Search" name="q"
+          value="{{q}}">
+        <!--Post 방식으로 input값을 q란 이름으로 넘겨준다 해당 value를 출력-->
+        <button class="btn btn-outline-warning my-2 my-sm-0" type="submit">검색</button>
+      </form>
+    </div>
+  </nav>
+  
+  <a href="{% url 'home' %}"><img class="logo" src="/static/logo.png" alt="update"></a>
+  <br>
+  <div class="container">
+    {% block content %}
+    {% endblock %}
+  </div>
+
+</body>
+
+<br>

@@ -1,0 +1,99 @@
+from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
+from django.core.paginator import Paginator
+from .models import Blog
+from .forms import BlogUpdate
+import qrcode
+# Create your views here.
+
+def home(request):
+    blogs = Blog.objects.order_by('-id')
+    blog_list = Blog.objects.all().order_by('-id')#paginator란 변수에 Pagenator를 이요해서 3개씩자른 글 목록을 넣어줌
+    paginator = Paginator(blog_list,3)
+    page = request.GET.get('page')
+    posts = paginator.get_page(page)#페이지를 출력하기위해 posts에 넣어줌
+    return render(request,'home.html',{'blogs':blogs,'posts':posts} )
+
+def detail(request, blog_id):
+    blog_detail = get_object_or_404(Blog, pk=blog_id)
+    return render(request, 'detail.html', {'blog': blog_detail})
+
+def mypage(request):
+    blog =Blog()
+    blog.author = request.user
+    qruser = blog.author
+    u_name = qruser.username
+    imge = qrcode.make(u_name)
+
+    url = 'media/images/' + str(u_name) + '.png'
+    imge.save(url)
+    return render(request, 'mypage.html',{'i': url})
+
+def create(request):
+   if request.user.is_authenticated: 
+       return render(request, 'create.html')#로그인 한 상태라면 new포스트 html로 보내기.
+   else:
+       blogs = Blog.objects
+       return render(request, 'home.html', {'blogs': blogs, 'error': 'You have to login to make newpost'})#회원정보가 존재하지 않는다면, 에러인자와 함께 home 템플릿으로 돌아가기.  
+
+   return render(request, 'create.html')
+    
+
+def postcreate(request):
+    blog = Blog()
+    blog.author = request.user
+    blog.title = request.POST['title']
+    blog.body = request.POST['body']
+    blog.images = request.FILES['images'] #새로 추가된 FILES를 이용해 images를 가져온다
+    blog.pub_date = timezone.datetime.now()
+    blog.save()
+    return redirect('/crudapp/detail/' + str(blog.id))
+
+def update(request, blog_id):
+    blog = Blog.objects.get(id=blog_id)
+
+    if request.method =='POST':
+        form = BlogUpdate(request.POST)
+        if form.is_valid():
+            blog.title = form.cleaned_data['title']
+            blog.body = form.cleaned_data['body']
+            blog.pub_date=timezone.now()
+            blog.save()
+            return redirect('/crudapp/detail/' + str(blog.id))
+    else:
+        form = BlogUpdate(instance = blog)#기존의 해당 게시글의 정보를 가지고온다.
+ 
+        return render(request,'update.html', {'form':form})
+def delete(request, blog_id):
+    blog = Blog.objects.get(id=blog_id)
+    blog.delete()
+    return redirect('/')
+
+def new(request):
+    full_text = request.GET['fulltext']
+
+    word_list = full_text.split()
+
+    word_dictionary = {}
+
+    for word in word_list:
+        if word in word_dictionary:
+            # Increase
+            word_dictionary[word] += 1
+        else:
+            # add to the dictionary
+            word_dictionary[word] = 1
+
+    return render(request, 'new.html', {'fulltext': full_text, 'total': len(word_list), 'dictionary': word_dictionary.items()} )
+
+def search(request):
+    blogs = Blog.objects.all().order_by('-id')#blogs에 모든 객체를 역순으로 담는다.
+
+    q=request.POST.get('q',"")#Post로 넘어온 값을 q에 담는다.
+
+    if q:
+        blogs = blogs.filter(title__icontains=q)#blogs에 filter를 하여 icontains을 이용해서 q와 비교
+        return render(request,'search.html',{'blogs' : blogs, 'q' :q})#같다면 search.html에 blogs와 q를 넘겨준다.
+    else:
+        return render(request,'search.html')
+

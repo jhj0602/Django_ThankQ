@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<br>
+<div class="container">
+	<form method="POST">
+	  {% csrf_token %}
+	  <table>
+		  {{form.as_table}}<!--입력폼은 as_table(), as_p(), as_ul() 등 여러가지 있습니다.-->
+	  </table>
+	  <input class="btn btn-dark" type="submit" value="수정하기">
+  </form>
+</div>
+
+{% endblock %}
